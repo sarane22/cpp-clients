@@ -59,7 +59,7 @@ StreamingRecognizeClient::StreamingRecognizeClient(
     std::string output_filename, std::string model_name, bool simulate_realtime,
     bool verbatim_transcripts, const std::string& boosted_phrases_file, float boosted_phrases_score,
     int32_t start_history, float start_threshold, int32_t stop_history, int32_t stop_history_eou,
-    float stop_threshold, float stop_threshold_eou, std::string custom_configuration)
+    float stop_threshold, float stop_threshold_eou, std::string custom_configuration, float offset, float onset, float pad_offset, float pad_onset, float min_duration_off, float min_duration_on)
     : print_latency_stats_(true), stub_(nr_asr::RivaSpeechRecognition::NewStub(channel)),
       language_code_(language_code), max_alternatives_(max_alternatives),
       profanity_filter_(profanity_filter), word_time_offsets_(word_time_offsets),
@@ -71,7 +71,7 @@ StreamingRecognizeClient::StreamingRecognizeClient(
       verbatim_transcripts_(verbatim_transcripts), boosted_phrases_score_(boosted_phrases_score),
       start_history_(start_history), start_threshold_(start_threshold), stop_history_(stop_history),
       stop_history_eou_(stop_history_eou), stop_threshold_(stop_threshold),
-      stop_threshold_eou_(stop_threshold_eou), custom_configuration_(custom_configuration)
+      stop_threshold_eou_(stop_threshold_eou), custom_configuration_(custom_configuration), onset_(onset), offset_(offset), pad_onset_(pad_onset), pad_offset_(pad_offset), min_duration_off_(min_duration_off), min_duration_on_(min_duration_on)
 {
   num_active_streams_.store(0);
   num_streams_finished_.store(0);
@@ -141,6 +141,39 @@ StreamingRecognizeClient::UpdateEndpointingConfig(nr_asr::RecognitionConfig* con
   }
 }
 
+
+void
+StreamingRecognizeClient::UpdateVADConfig(nr_asr::RecognitionConfig* config)
+{
+  if (!(offset_ > 0 || onset_ > 0 || pad_onset_ > 0 || pad_offset_ > 0 ||
+        min_duration_off_ > 0 || min_duration_on_ > 0)) {
+    return;
+  }
+  // Set the endpoint parameters
+  // Get a mutable reference to the Endpointing config message
+  auto* vad_config = config->mutable_vad_config();
+
+  if (offset_ > 0) {
+    vad_config->set_offset(offset_);
+  }
+  if (onset_ > 0) {
+    vad_config->set_onset(onset_);
+  }
+  if (pad_onset_ > 0) {
+    vad_config->set_pad_onset(pad_onset_);
+  }
+  if (pad_offset_ > 0) {
+    vad_config->set_pad_offset(pad_offset_);
+  }
+  if (min_duration_off_ > 0) {
+    vad_config->set_min_duration_off(min_duration_off_);
+  }
+  if (min_duration_on_ > 0) {
+    vad_config->set_min_duration_on(min_duration_on_);
+  }
+}
+
+
 void
 StreamingRecognizeClient::GenerateRequests(std::shared_ptr<ClientCall> call)
 {
@@ -181,6 +214,7 @@ StreamingRecognizeClient::GenerateRequests(std::shared_ptr<ClientCall> call)
 
       // Set the endpoint parameters
       UpdateEndpointingConfig(config);
+      UpdateVADConfig(config);
 
       call->streamer->Write(request);
       first_write = false;

@@ -49,7 +49,7 @@ class StreamingRecognizeClient {
       bool verbatim_transcripts, const std::string& boosted_phrases_file,
       float boosted_phrases_score, int32_t start_history, float start_threshold,
       int32_t stop_history, int32_t stop_history_eou, float stop_threshold,
-      float stop_threshold_eou, std::string custom_configuration);
+      float stop_threshold_eou, std::string custom_configuration, float offset, float onset, float pad_offset, float pad_onset, float min_duration_off, float min_duration_on);
 
   ~StreamingRecognizeClient();
 
@@ -62,6 +62,7 @@ class StreamingRecognizeClient {
   void StartNewStream(std::unique_ptr<Stream> stream);
 
   void UpdateEndpointingConfig(nr_asr::RecognitionConfig* config);
+  void UpdateVADConfig(nr_asr::RecognitionConfig* config);
 
   void GenerateRequests(std::shared_ptr<ClientCall> call);
 
@@ -126,4 +127,10 @@ class StreamingRecognizeClient {
   float stop_threshold_;
   float stop_threshold_eou_;
   std::string custom_configuration_;
+  float offset_;
+  float onset_;
+  float pad_offset_;
+  float pad_onset_;
+  float min_duration_off_;
+  float min_duration_on_;
 };

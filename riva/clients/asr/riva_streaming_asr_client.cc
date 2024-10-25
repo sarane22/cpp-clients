@@ -90,6 +90,24 @@ DEFINE_int32(
 DEFINE_double(
     stop_threshold_eou, -1.,
     "Threshold value for likelihood of blanks before detecting end of utterance");
+DEFINE_double(
+    offset, -1.,
+    "VAD offset");
+DEFINE_double(
+    onset, -1.,
+    "VAD onset");
+DEFINE_double(
+    pad_offset, -1.,
+    "VAD pad_offset");
+DEFINE_double(
+    pad_onset, -1.,
+    "VAD pad_onset");
+DEFINE_double(
+    min_duration_off, -1.,
+    "VAD min_duration_off");
+DEFINE_double(
+    min_duration_on, -1.,
+    "VAD min_duration_on");
 DEFINE_string(
     custom_configuration, "",
     "Custom configurations to be sent to the server as key value pairs <key:value,key:value,...>");
@@ -210,7 +228,7 @@ main(int argc, char** argv)
       FLAGS_interim_results, FLAGS_output_filename, FLAGS_model_name, FLAGS_simulate_realtime,
       FLAGS_verbatim_transcripts, FLAGS_boosted_words_file, FLAGS_boosted_words_score,
       FLAGS_start_history, FLAGS_start_threshold, FLAGS_stop_history, FLAGS_stop_history_eou,
-      FLAGS_stop_threshold, FLAGS_stop_threshold_eou, FLAGS_custom_configuration);
+      FLAGS_stop_threshold, FLAGS_stop_threshold_eou, FLAGS_custom_configuration, FLAGS_offset, FLAGS_onset, FLAGS_pad_offset, FLAGS_pad_onset, FLAGS_min_duration_off, FLAGS_min_duration_on);
 
   if (FLAGS_audio_file.size()) {
     return recognize_client.DoStreamingFromFile(
