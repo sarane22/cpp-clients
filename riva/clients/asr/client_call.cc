@@ -17,6 +17,7 @@ void
 ClientCall::AppendResult(const nr_asr::StreamingRecognitionResult& result)
 {
   if (result.has_pipeline_states()) {
+    VLOG(1)<<"SPEECH_EVENT_TYPE: " << result.speech_event_type();
     if (latest_result_.final_transcripts.size() == 0) {
       latest_result_.final_transcripts.resize(1);
       latest_result_.final_transcripts[0] = "";

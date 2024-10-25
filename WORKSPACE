@@ -70,7 +70,7 @@ grpc_extra_deps()
 git_repository(
      name = "nvriva_common",
      remote = "https://github.com/sarane22/common.git",
-     commit = "c15d5f02e8aee4b01daebc0d3a09f71aa9aa40c0"
+     commit = "aace29d3baf25437d3ce4f6fdd904d1c8ecf4980"
 )
 
 http_archive(
