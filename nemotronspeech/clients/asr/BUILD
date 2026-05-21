@@ -42,7 +42,7 @@ cc_library(
         "@com_github_grpc_grpc//:grpc++",
         "@nvriva_common//riva/proto:riva_grpc_asr",
         "@glog//:glog",
-        "//riva/utils/wav:reader",
+        "//nemotronspeech/utils/wav:reader",
     ],
 )
 
@@ -54,8 +54,8 @@ cc_library(
     deps = [
         ":asr_client_helper",
         ":client_call",
-        "//riva/utils/wav:reader",
-        "//riva/utils/opus",
+        "//nemotronspeech/utils/wav:reader",
+        "//nemotronspeech/utils/opus",
         "@glog//:glog",
     ] + select({
         "@platforms//cpu:aarch64": [
@@ -65,11 +65,11 @@ cc_library(
             "@alsa//:libasound"
         ],
     }) + [
-        "//riva/utils:stamping",
+        "//nemotronspeech/utils:stamping",
         "@com_github_grpc_grpc//:grpc++",
         "@com_github_gflags_gflags//:gflags",
         "@nvriva_common//riva/proto:riva_grpc_asr",
-        "//riva/utils:thread_pool",
+        "//nemotronspeech/utils:thread_pool",
     ],
 )
 
@@ -80,13 +80,13 @@ cc_binary(
         ":asr_client_helper",
         ":client_call",
         "@nvriva_common//riva/proto:riva_grpc_asr",
-        "//riva/utils:stamping",
-        "//riva/utils/files:files",
-        "//riva/utils/wav:reader",
+        "//nemotronspeech/utils:stamping",
+        "//nemotronspeech/utils/files:files",
+        "//nemotronspeech/utils/wav:reader",
         "@glog//:glog",
         "@com_github_grpc_grpc//:grpc++",
         "@com_github_gflags_gflags//:gflags",
-        "//riva/clients/utils:grpc",
+        "//nemotronspeech/clients/utils:grpc",
     ]
 )
 
@@ -98,10 +98,10 @@ cc_binary(
         ":client_call",
         ":streaming_recognize_client",
         "@nvriva_common//riva/proto:riva_grpc_asr",
-        "//riva/utils/files:files",
-        "//riva/utils/wav:reader",
+        "//nemotronspeech/utils/files:files",
+        "//nemotronspeech/utils/wav:reader",
         "@glog//:glog",
-        "//riva/clients/utils:grpc",
+        "//nemotronspeech/clients/utils:grpc",
     ] + select({
         "@platforms//cpu:aarch64": [
             "@alsa_aarch64//:libasound"

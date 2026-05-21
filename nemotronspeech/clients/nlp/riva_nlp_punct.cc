@@ -21,9 +21,9 @@
 #include <string>
 #include <thread>
 
-#include "riva/clients/utils/grpc.h"
-#include "riva/utils/files/files.h"
-#include "riva/utils/stamping.h"
+#include "nemotronspeech/clients/utils/grpc.h"
+#include "nemotronspeech/utils/files/files.h"
+#include "nemotronspeech/utils/stamping.h"
 #include "riva_nlp_client.h"
 
 using grpc::Status;

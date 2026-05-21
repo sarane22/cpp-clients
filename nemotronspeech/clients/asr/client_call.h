@@ -25,7 +25,7 @@
 #include <thread>
 
 #include "riva/proto/riva_asr.grpc.pb.h"
-#include "riva/utils/wav/wav_reader.h"
+#include "nemotronspeech/utils/wav/wav_reader.h"
 #include "riva_asr_client_helper.h"
 
 using grpc::Status;

@@ -16,9 +16,9 @@
 #include <regex>
 #include <thread>
 
-#include "riva/clients/utils/grpc.h"
+#include "nemotronspeech/clients/utils/grpc.h"
 #include "riva/proto/riva_nmt.grpc.pb.h"
-#include "riva/utils/files/files.h"
+#include "nemotronspeech/utils/files/files.h"
 using grpc::Status;
 using grpc::StatusCode;
 

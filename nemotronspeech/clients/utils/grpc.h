@@ -13,8 +13,8 @@
 #include <chrono>
 #include <string>
 
-#include "riva/utils/files/files.h"
-#include "riva/utils/string_processing.h"
+#include "nemotronspeech/utils/files/files.h"
+#include "nemotronspeech/utils/string_processing.h"
 
 constexpr int MAX_GRPC_MESSAGE_SIZE = 128 * 1024 * 1024;
 

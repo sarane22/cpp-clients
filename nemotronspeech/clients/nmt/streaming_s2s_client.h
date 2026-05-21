@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: Copyright (c) 2022 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+ * SPDX-FileCopyrightText: Copyright (c) 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
  * SPDX-License-Identifier: MIT
  */
 
@@ -27,32 +27,38 @@
 #include <thread>
 
 #include "client_call.h"
+#include "nemotronspeech/clients/asr/riva_asr_client_helper.h"
 #include "riva/proto/riva_asr.grpc.pb.h"
-#include "riva/utils/thread_pool.h"
-#include "riva/utils/wav/wav_reader.h"
-#include "riva_asr_client_helper.h"
+#include "nemotronspeech/utils/thread_pool.h"
+#include "nemotronspeech/utils/wav/wav_reader.h"
+#include "nemotronspeech/utils/wav/wav_writer.h"
 
 using grpc::Status;
 using grpc::StatusCode;
 
 namespace nr = nvidia::riva;
 namespace nr_asr = nvidia::riva::asr;
+namespace nr_nmt = nvidia::riva::nmt;
 
-class StreamingRecognizeClient {
+typedef ClientCall<
+    nr_nmt::StreamingTranslateSpeechToSpeechRequest,
+    nr_nmt::StreamingTranslateSpeechToSpeechResponse>
+    S2SClientCall;
+
+class StreamingS2SClient {
  public:
-  StreamingRecognizeClient(
+  StreamingS2SClient(
       std::shared_ptr<grpc::Channel> channel, int32_t num_parallel_requests,
-      const std::string& language_code, int32_t max_alternatives, bool profanity_filter,
-      bool word_time_offsets, bool automatic_punctuation, bool separate_recognition_per_channel,
-      bool print_transcripts, int32_t chunk_duration_ms, bool interim_results,
-      std::string output_filename, std::string model_name, bool simulate_realtime,
+      const std::string& source_language_code, const std::string& target_language_code_,
+      const std::string& dnt_words_file, bool profanity_filter, bool automatic_punctuation,
+      bool separate_recognition_per_channel, int32_t chunk_duration_ms, bool simulate_realtime,
       bool verbatim_transcripts, const std::string& boosted_phrases_file,
-      float boosted_phrases_score, int32_t start_history, float start_threshold,
-      int32_t stop_history, int32_t stop_history_eou, float stop_threshold,
-      float stop_threshold_eou, std::string custom_configuration,
-      bool speaker_diarization, int32_t diarization_max_speakers);
+      float boosted_phrases_score, const std::string& tts_encoding,
+      const std::string& tts_audio_file, int tts_sample_rate, const std::string& tts_voice_name,
+      std::string& tts_prosody_rate, std::string& tts_prosody_pitch,
+      std::string& tts_prosody_volume);
 
-  ~StreamingRecognizeClient();
+  ~StreamingS2SClient();
 
   uint32_t NumActiveStreams() { return num_active_streams_.load(); }
 
@@ -62,18 +68,13 @@ class StreamingRecognizeClient {
 
   void StartNewStream(std::unique_ptr<Stream> stream);
 
-  void UpdateEndpointingConfig(nr_asr::RecognitionConfig* config);
-
-  void UpdateSpeakerDiarizationConfig(nr_asr::RecognitionConfig* config);
-
-  void GenerateRequests(std::shared_ptr<ClientCall> call);
-
+  void GenerateRequests(std::shared_ptr<S2SClientCall> call);
   int DoStreamingFromFile(
       std::string& audio_file, int32_t num_iterations, int32_t num_parallel_requests);
 
-  void PostProcessResults(std::shared_ptr<ClientCall> call, bool audio_device);
+  void PostProcessResults(std::shared_ptr<S2SClientCall> call, bool audio_device);
 
-  void ReceiveResponses(std::shared_ptr<ClientCall> call, bool audio_device);
+  void ReceiveResponses(std::shared_ptr<S2SClientCall> call, bool audio_device);
 
   int DoStreamingFromMicrophone(const std::string& audio_device, bool& request_exit);
 
@@ -83,24 +84,24 @@ class StreamingRecognizeClient {
 
   std::mutex latencies_mutex_;
 
-  bool print_latency_stats_;
-
  private:
   // Out of the passed in Channel comes the stub, stored here, our view of the
   // server's exposed services.
-  std::unique_ptr<nr_asr::RivaSpeechRecognition::Stub> stub_;
-  std::vector<double> int_latencies_, final_latencies_, latencies_;
+  std::unique_ptr<nr_nmt::RivaTranslation::Stub> stub_;
+  std::vector<double> latencies_;
+  std::string tts_encoding_;
+  std::string tts_audio_file_;
+  std::string tts_voice_name_;
+  std::string source_language_code_;
+  std::string target_language_code_;
+  std::vector<std::string> dnt_phrases_;
+  int tts_sample_rate_;
 
-  std::string language_code_;
-  int32_t max_alternatives_;
   bool profanity_filter_;
   int32_t channels_;
-  bool word_time_offsets_;
   bool automatic_punctuation_;
   bool separate_recognition_per_channel_;
-  bool print_transcripts_;
   int32_t chunk_duration_ms_;
-  bool interim_results_;
 
   std::mutex curr_tasks_mutex_;
 
@@ -113,8 +114,6 @@ class StreamingRecognizeClient {
 
   std::unique_ptr<ThreadPool> thread_pool_;
 
-  std::ofstream output_file_;
-
   std::string model_name_;
   bool simulate_realtime_;
   bool verbatim_transcripts_;
@@ -122,13 +121,7 @@ class StreamingRecognizeClient {
   std::vector<std::string> boosted_phrases_;
   float boosted_phrases_score_;
 
-  int32_t start_history_;
-  float start_threshold_;
-  int32_t stop_history_;
-  int32_t stop_history_eou_;
-  float stop_threshold_;
-  float stop_threshold_eou_;
-  std::string custom_configuration_;
-  bool speaker_diarization_;
-  int32_t diarization_max_speakers_;
+  std::string tts_prosody_rate_;
+  std::string tts_prosody_pitch_;
+  std::string tts_prosody_volume_;
 };

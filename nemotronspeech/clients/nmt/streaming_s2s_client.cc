@@ -1,22 +1,21 @@
 /*
- * SPDX-FileCopyrightText: Copyright (c) 2022 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+ * SPDX-FileCopyrightText: Copyright (c) 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
  * SPDX-License-Identifier: MIT
  */
 
+#include "streaming_s2s_client.h"
 
-#include "streaming_recognize_client.h"
-
-#include "riva/utils/opus/opus_client_decoder.h"
+#include "nemotronspeech/utils/opus/opus_client_decoder.h"
 
 #define clear_screen() printf("\033[H\033[J")
 #define gotoxy(x, y) printf("\033[%d;%dH", (y), (x))
 
 static void
 MicrophoneThreadMain(
-    std::shared_ptr<ClientCall> call, snd_pcm_t* alsa_handle, int samplerate, int numchannels,
+    std::shared_ptr<S2SClientCall> call, snd_pcm_t* alsa_handle, int samplerate, int numchannels,
     nr::AudioEncoding& encoding, int32_t chunk_duration_ms, bool& request_exit)
 {
-  nr_asr::StreamingRecognizeRequest request;
+  nr_nmt::StreamingTranslateSpeechToSpeechRequest request;
   int total_samples = 0;
 
   // Read 0.1s of audio
@@ -51,108 +50,57 @@ MicrophoneThreadMain(
   }
 }
 
-StreamingRecognizeClient::StreamingRecognizeClient(
+StreamingS2SClient::StreamingS2SClient(
     std::shared_ptr<grpc::Channel> channel, int32_t num_parallel_requests,
-    const std::string& language_code, int32_t max_alternatives, bool profanity_filter,
-    bool word_time_offsets, bool automatic_punctuation, bool separate_recognition_per_channel,
-    bool print_transcripts, int32_t chunk_duration_ms, bool interim_results,
-    std::string output_filename, std::string model_name, bool simulate_realtime,
+    const std::string& source_language_code, const std::string& target_language_code,
+    const std::string& dnt_phrases_file, bool profanity_filter, bool automatic_punctuation,
+    bool separate_recognition_per_channel, int32_t chunk_duration_ms, bool simulate_realtime,
     bool verbatim_transcripts, const std::string& boosted_phrases_file, float boosted_phrases_score,
-    int32_t start_history, float start_threshold, int32_t stop_history, int32_t stop_history_eou,
-    float stop_threshold, float stop_threshold_eou, std::string custom_configuration,
-    bool speaker_diarization, int32_t diarization_max_speakers)
-    : print_latency_stats_(true), stub_(nr_asr::RivaSpeechRecognition::NewStub(channel)),
-      language_code_(language_code), max_alternatives_(max_alternatives),
-      profanity_filter_(profanity_filter), word_time_offsets_(word_time_offsets),
+    const std::string& tts_encoding, const std::string& tts_audio_file, int tts_sample_rate,
+    const std::string& tts_voice_name, std::string& tts_prosody_rate,
+    std::string& tts_prosody_pitch, std::string& tts_prosody_volume)
+    : stub_(nr_nmt::RivaTranslation::NewStub(channel)), tts_encoding_(tts_encoding),
+      tts_audio_file_(tts_audio_file), tts_voice_name_(tts_voice_name),
+      source_language_code_(source_language_code), target_language_code_(target_language_code),
+      tts_sample_rate_(tts_sample_rate), profanity_filter_(profanity_filter),
       automatic_punctuation_(automatic_punctuation),
       separate_recognition_per_channel_(separate_recognition_per_channel),
-      print_transcripts_(print_transcripts), chunk_duration_ms_(chunk_duration_ms),
-      interim_results_(interim_results), total_audio_processed_(0.), num_streams_started_(0),
-      model_name_(model_name), simulate_realtime_(simulate_realtime),
-      verbatim_transcripts_(verbatim_transcripts), boosted_phrases_score_(boosted_phrases_score),
-      start_history_(start_history), start_threshold_(start_threshold), stop_history_(stop_history),
-      stop_history_eou_(stop_history_eou), stop_threshold_(stop_threshold),
-      stop_threshold_eou_(stop_threshold_eou), custom_configuration_(custom_configuration),
-      speaker_diarization_(speaker_diarization), diarization_max_speakers_(diarization_max_speakers)
+      chunk_duration_ms_(chunk_duration_ms), total_audio_processed_(0.), num_streams_started_(0),
+      simulate_realtime_(simulate_realtime), verbatim_transcripts_(verbatim_transcripts),
+      boosted_phrases_score_(boosted_phrases_score), tts_prosody_rate_(tts_prosody_rate),
+      tts_prosody_pitch_(tts_prosody_pitch), tts_prosody_volume_(tts_prosody_volume)
 {
   num_active_streams_.store(0);
   num_streams_finished_.store(0);
   thread_pool_.reset(new ThreadPool(4 * num_parallel_requests));
 
-  if (print_transcripts_) {
-    output_file_.open(output_filename);
-  }
-
   boosted_phrases_ = ReadPhrasesFromFile(boosted_phrases_file);
+  dnt_phrases_ = ReadPhrasesFromFile(dnt_phrases_file);
 }
 
-StreamingRecognizeClient::~StreamingRecognizeClient()
-{
-  if (print_transcripts_) {
-    output_file_.close();
-  }
-}
+StreamingS2SClient::~StreamingS2SClient() {}
 
 void
-StreamingRecognizeClient::StartNewStream(std::unique_ptr<Stream> stream)
+StreamingS2SClient::StartNewStream(std::unique_ptr<Stream> stream)
 {
-  std::shared_ptr<ClientCall> call =
-      std::make_shared<ClientCall>(stream->corr_id, word_time_offsets_, speaker_diarization_);
-  call->streamer = stub_->StreamingRecognize(&call->context);
+  std::cout << "starting a new stream!" << std::endl;
+  std::shared_ptr<S2SClientCall> call = std::make_shared<S2SClientCall>(stream->corr_id, false);
+  call->streamer = stub_->StreamingTranslateSpeechToSpeech(&call->context);
   call->stream = std::move(stream);
 
   num_active_streams_++;
   num_streams_started_++;
 
-  auto gen_func = std::bind(&StreamingRecognizeClient::GenerateRequests, this, call);
+  auto gen_func = std::bind(&StreamingS2SClient::GenerateRequests, this, call);
   auto recv_func =
-      std::bind(&StreamingRecognizeClient::ReceiveResponses, this, call, false /*audio_device*/);
+      std::bind(&StreamingS2SClient::ReceiveResponses, this, call, false /*audio_device*/);
 
   thread_pool_->Enqueue(gen_func);
   thread_pool_->Enqueue(recv_func);
 }
 
 void
-StreamingRecognizeClient::UpdateEndpointingConfig(nr_asr::RecognitionConfig* config)
-{
-  if (!(start_history_ > 0 || start_threshold_ > 0 || stop_history_ > 0 || stop_history_eou_ > 0 ||
-        stop_threshold_ > 0 || stop_threshold_eou_ > 0)) {
-    return;
-  }
-  // Set the endpoint parameters
-  // Get a mutable reference to the Endpointing config message
-  auto* endpointing_config = config->mutable_endpointing_config();
-
-  if (start_history_ > 0) {
-    endpointing_config->set_start_history(start_history_);
-  }
-  if (start_threshold_ > 0) {
-    endpointing_config->set_start_threshold(start_threshold_);
-  }
-  if (stop_history_ > 0) {
-    endpointing_config->set_stop_history(stop_history_);
-  }
-  if (stop_history_eou_ > 0) {
-    endpointing_config->set_stop_history_eou(stop_history_eou_);
-  }
-  if (stop_threshold_ > 0) {
-    endpointing_config->set_stop_threshold(stop_threshold_);
-  }
-  if (stop_threshold_eou_ > 0) {
-    endpointing_config->set_stop_threshold_eou(stop_threshold_eou_);
-  }
-}
-
-void
-StreamingRecognizeClient::UpdateSpeakerDiarizationConfig(nr_asr::RecognitionConfig* config)
-{
-  auto speaker_diarization_config = config->mutable_diarization_config();
-  speaker_diarization_config->set_enable_speaker_diarization(speaker_diarization_);
-  speaker_diarization_config->set_max_speaker_count(diarization_max_speakers_);
-}
-
-void
-StreamingRecognizeClient::GenerateRequests(std::shared_ptr<ClientCall> call)
+StreamingS2SClient::GenerateRequests(std::shared_ptr<S2SClientCall> call)
 {
   float audio_processed = 0.;
 
@@ -160,41 +108,54 @@ StreamingRecognizeClient::GenerateRequests(std::shared_ptr<ClientCall> call)
   bool done = false;
   auto start_time = std::chrono::steady_clock::now();
   while (!done) {
-    nr_asr::StreamingRecognizeRequest request;
+    nr_nmt::StreamingTranslateSpeechToSpeechRequest request;
     if (first_write) {
-      auto streaming_config = request.mutable_streaming_config();
-      streaming_config->set_interim_results(interim_results_);
-      auto config = streaming_config->mutable_config();
+      auto streaming_s2s_config = request.mutable_config();
+
+      // set nmt config
+      auto translation_config = streaming_s2s_config->mutable_translation_config();
+      translation_config->set_source_language_code(source_language_code_);
+      translation_config->set_target_language_code(target_language_code_);
+      *(translation_config->mutable_dnt_phrases()) = {dnt_phrases_.begin(), dnt_phrases_.end()};
+
+      // set tts config
+      auto tts_config = streaming_s2s_config->mutable_tts_config();
+      if (tts_encoding_.empty() || tts_encoding_ == "pcm") {
+        tts_config->set_encoding(nr::LINEAR_PCM);
+      } else if (tts_encoding_ == "opus") {
+        tts_config->set_encoding(nr::OGGOPUS);
+      }
+      int32_t rate = tts_sample_rate_;
+      if (tts_encoding_ == "opus") {
+        rate = riva::utils::opus::Decoder::AdjustRateIfUnsupported(tts_sample_rate_);
+      }
+      tts_config->set_sample_rate_hz(rate);
+      tts_config->set_voice_name(tts_voice_name_);
+      tts_config->set_language_code(target_language_code_);
+      tts_config->set_prosody_rate(tts_prosody_rate_);
+      tts_config->set_prosody_pitch(tts_prosody_pitch_);
+      tts_config->set_prosody_volume(tts_prosody_volume_);
+
+      // set asr config
+      auto streaming_asr_config = streaming_s2s_config->mutable_asr_config();
+      streaming_asr_config->set_interim_results(false);
+      auto config = streaming_asr_config->mutable_config();
       config->set_sample_rate_hertz(call->stream->wav->sample_rate);
-      config->set_language_code(language_code_);
+      config->set_language_code(source_language_code_);
       config->set_encoding(call->stream->wav->encoding);
-      config->set_max_alternatives(max_alternatives_);
+      config->set_max_alternatives(1);
       config->set_profanity_filter(profanity_filter_);
       config->set_audio_channel_count(call->stream->wav->channels);
-      config->set_enable_word_time_offsets(word_time_offsets_);
+      config->set_enable_word_time_offsets(false);
       config->set_enable_automatic_punctuation(automatic_punctuation_);
       config->set_enable_separate_recognition_per_channel(separate_recognition_per_channel_);
       auto custom_config = config->mutable_custom_configuration();
-      std::unordered_map<std::string, std::string> custom_configuration_map =
-          ReadCustomConfiguration(custom_configuration_);
-      for (auto& it : custom_configuration_map) {
-        (*custom_config)[it.first] = it.second;
-      }
+      (*custom_config)["test_key"] = "test_value";
       config->set_verbatim_transcripts(verbatim_transcripts_);
-      if (model_name_ != "") {
-        config->set_model(model_name_);
-      }
 
       nr_asr::SpeechContext* speech_context = config->add_speech_contexts();
       *(speech_context->mutable_phrases()) = {boosted_phrases_.begin(), boosted_phrases_.end()};
       speech_context->set_boost(boosted_phrases_score_);
-
-      // Set the endpoint parameters
-      UpdateEndpointingConfig(config);
-
-      // Set the speaker diarization parameters
-      UpdateSpeakerDiarizationConfig(config);
-
       call->streamer->Write(request);
       first_write = false;
     }
@@ -234,8 +195,8 @@ StreamingRecognizeClient::GenerateRequests(std::shared_ptr<ClientCall> call)
 
     // Set write done to true so next call will lead to WritesDone
     if (offset == call->stream->wav->data.size()) {
-      call->streamer->WritesDone();
       done = true;
+      call->streamer->WritesDone();
     }
   }
 
@@ -243,12 +204,10 @@ StreamingRecognizeClient::GenerateRequests(std::shared_ptr<ClientCall> call)
     std::lock_guard<std::mutex> lock(latencies_mutex_);
     total_audio_processed_ += audio_processed;
   }
-
-  num_active_streams_--;
 }
 
 int
-StreamingRecognizeClient::DoStreamingFromFile(
+StreamingS2SClient::DoStreamingFromFile(
     std::string& audio_file, int32_t num_iterations, int32_t num_parallel_requests)
 {
   // Preload all wav files, sort by size to reduce tail effects
@@ -290,6 +249,7 @@ StreamingRecognizeClient::DoStreamingFromFile(
     }
   }
 
+
   auto current_time = std::chrono::steady_clock::now();
   {
     std::lock_guard<std::mutex> lock(latencies_mutex_);
@@ -298,55 +258,32 @@ StreamingRecognizeClient::DoStreamingFromFile(
     std::cout << std::flush;
     double diff_time = std::chrono::duration<double, std::milli>(current_time - start_time).count();
 
-    float total_processed = 0.F;
-    for (auto& wav : all_wav) {
-      riva::utils::opus::Decoder decoder;
-      if (wav->encoding == nvidia::riva::AudioEncoding::OGGOPUS) {
-        std::ifstream is(wav->filename);
-        auto wav_stream = decoder.DecodeStream(is);
-        total_processed += (float)wav_stream.size() / 48000.F;
-      } else {
-        total_processed = TotalAudioProcessed();
-      }
-    }
-
     std::cout << "Run time: " << diff_time / 1000. << " sec." << std::endl;
-    std::cout << "Total audio processed: " << total_processed << " sec." << std::endl;
-    std::cout << "Throughput: " << total_processed * 1000. / diff_time << " RTFX" << std::endl;
+    std::cout << "Total audio processed: " << TotalAudioProcessed() << " sec." << std::endl;
+    std::cout << "Throughput: " << TotalAudioProcessed() * 1000. / diff_time << " RTFX"
+              << std::endl;
   }
 
   return 0;
 }
 
 void
-StreamingRecognizeClient::PostProcessResults(std::shared_ptr<ClientCall> call, bool audio_device)
+StreamingS2SClient::PostProcessResults(std::shared_ptr<S2SClientCall> call, bool audio_device)
 {
   std::lock_guard<std::mutex> lock(latencies_mutex_);
-  // it is possible we get one response more than the number of requests sent
-  // in the case where files are perfect multiple of chunk size
-  if (call->recv_times.size() != call->send_times.size() &&
-      call->recv_times.size() != call->send_times.size() + 1) {
-    print_latency_stats_ = false;
-  } else {
-    for (uint32_t time_cnt = 0; time_cnt < call->send_times.size(); ++time_cnt) {
-      double lat = std::chrono::duration<double, std::milli>(
-                       call->recv_times[time_cnt] - call->send_times[time_cnt])
-                       .count();
-      if (call->recv_final_flags[time_cnt]) {
-        final_latencies_.push_back(lat);
-      } else {
-        int_latencies_.push_back(lat);
-      }
-      latencies_.push_back(lat);
-    }
-  }
-  if (print_transcripts_) {
-    call->PrintResult(audio_device, output_file_);
+  // the latency for the s2s would be for an individual file as the difference between the last
+  // chunk sent to the first chunk of audio received.
+  if (simulate_realtime_) {
+    double lat =
+        std::chrono::duration<double, std::milli>(call->recv_times[0] - call->send_times.back())
+            .count();
+    VLOG(1) << "Latency:" << lat << std::endl;
+    latencies_.push_back(lat);
   }
 }
 
 void
-StreamingRecognizeClient::ReceiveResponses(std::shared_ptr<ClientCall> call, bool audio_device)
+StreamingS2SClient::ReceiveResponses(std::shared_ptr<S2SClientCall> call, bool audio_device)
 {
   if (audio_device) {
     clear_screen();
@@ -354,40 +291,45 @@ StreamingRecognizeClient::ReceiveResponses(std::shared_ptr<ClientCall> call, boo
     gotoxy(0, 5);
   }
 
-  while (call->streamer->Read(&call->response)) {  // Returns false when no m ore to read.
+  std::vector<int16_t> pcm_buffer;
+  std::vector<unsigned char> opus_buffer;
+  while (call->streamer->Read(&call->response)) {  // Returns false when no more to read.
+    if (!call->response.speech().audio().length()) {
+      // If the audio size is zero continue the loop for next sentence.
+      VLOG(1) << "Got 0 bytes back from server.Sentence Completed.";
+      continue;
+    }
     call->recv_times.push_back(std::chrono::steady_clock::now());
-
-    // Reset the partial transcript
-    call->latest_result_.partial_transcript = "";
-    call->latest_result_.partial_time_stamps.clear();
-
-    bool is_final = false;
-    for (int r = 0; r < call->response.results_size(); ++r) {
-      const auto& result = call->response.results(r);
-      if (result.is_final()) {
-        is_final = true;
-      }
-
-      if (audio_device) {
-        clear_screen();
-        std::cout << "ASR started... press `Ctrl-C' to stop recording\n\n";
-        gotoxy(0, 5);
-      }
-
-
-      call->latest_result_.audio_processed = result.audio_processed();
-      if (print_transcripts_) {
-        call->AppendResult(result);
-      }
+    auto audio = call->response.speech().audio();
+    if (audio_device) {
+      clear_screen();
+      std::cout << "ASR started... press `Ctrl-C' to stop recording\n\n";
+      gotoxy(0, 5);
     }
 
-    if (call->response.results_size() && interim_results_ && print_transcripts_) {
-      std::cout << call->latest_result_.final_transcripts[0] +
-                       call->latest_result_.partial_transcript
-                << std::endl;
+    std::cout << "Got " << audio.length() << " bytes back from server" << std::endl;
+    if (tts_encoding_.empty() || tts_encoding_ == "pcm") {
+      int16_t* pcm_data = (int16_t*)audio.data();
+      size_t len = audio.length() / sizeof(int16_t);
+      std::copy(pcm_data, pcm_data + len, std::back_inserter(pcm_buffer));
+    } else if (tts_encoding_ == "opus") {
+      const unsigned char* opus_data = (unsigned char*)audio.data();
+      size_t len = audio.length();
+      std::copy(opus_data, opus_data + len, std::back_inserter(opus_buffer));
     }
+  }
 
-    call->recv_final_flags.push_back(is_final);
+  // Write to WAV file
+  if (tts_encoding_.empty() || tts_encoding_ == "pcm") {
+    ::riva::utils::wav::Write(
+        tts_audio_file_, tts_sample_rate_, pcm_buffer.data(), pcm_buffer.size());
+    pcm_buffer.clear();
+  } else if (tts_encoding_ == "opus") {
+    int32_t rate = riva::utils::opus::Decoder::AdjustRateIfUnsupported(tts_sample_rate_);
+    riva::utils::opus::Decoder decoder(rate, 1);
+    auto pcm = decoder.DecodePcm(decoder.DeserializeOpus(opus_buffer));
+    ::riva::utils::wav::Write(tts_audio_file_, rate, pcm.data(), pcm.size());
+    opus_buffer.clear();
   }
 
   grpc::Status status = call->streamer->Finish();
@@ -397,13 +339,13 @@ StreamingRecognizeClient::ReceiveResponses(std::shared_ptr<ClientCall> call, boo
   } else {
     PostProcessResults(call, audio_device);
   }
-
+  // A stream would be marked as complete when both ASR and TTS are complete
+  num_active_streams_--;
   num_streams_finished_++;
 }
 
 int
-StreamingRecognizeClient::DoStreamingFromMicrophone(
-    const std::string& audio_device, bool& request_exit)
+StreamingS2SClient::DoStreamingFromMicrophone(const std::string& audio_device, bool& request_exit)
 {
   nr::AudioEncoding encoding = nr::LINEAR_PCM;
   int samplerate = 16000;
@@ -420,28 +362,51 @@ StreamingRecognizeClient::DoStreamingFromMicrophone(
   }
   std::cout << "Using device:" << audio_device << std::endl;
 
-  std::shared_ptr<ClientCall> call = std::make_shared<ClientCall>(1, word_time_offsets_, speaker_diarization_);
-  call->streamer = stub_->StreamingRecognize(&call->context);
+  std::shared_ptr<S2SClientCall> call = std::make_shared<S2SClientCall>(1, false);
+
+  call->streamer = stub_->StreamingTranslateSpeechToSpeech(&call->context);
 
   // Send first request
-  nr_asr::StreamingRecognizeRequest request;
-  auto streaming_config = request.mutable_streaming_config();
-  streaming_config->set_interim_results(interim_results_);
+  nr_nmt::StreamingTranslateSpeechToSpeechRequest request;
+  auto s2s_config = request.mutable_config();
+
+  // set nmt config
+  auto translation_config = s2s_config->mutable_translation_config();
+  translation_config->set_source_language_code(source_language_code_);
+  translation_config->set_target_language_code(target_language_code_);
+
+  // set tts config
+  auto tts_config = s2s_config->mutable_tts_config();
+  if (tts_encoding_.empty() || tts_encoding_ == "pcm") {
+    tts_config->set_encoding(nr::LINEAR_PCM);
+  } else if (tts_encoding_ == "opus") {
+    tts_config->set_encoding(nr::OGGOPUS);
+  }
+  int32_t rate = tts_sample_rate_;
+  if (tts_encoding_ == "opus") {
+    rate = riva::utils::opus::Decoder::AdjustRateIfUnsupported(tts_sample_rate_);
+  }
+  tts_config->set_sample_rate_hz(rate);
+  tts_config->set_voice_name(tts_voice_name_);
+  tts_config->set_language_code(target_language_code_);
+  tts_config->set_prosody_rate(tts_prosody_rate_);
+  tts_config->set_prosody_pitch(tts_prosody_pitch_);
+  tts_config->set_prosody_volume(tts_prosody_volume_);
+
+
+  auto streaming_config = s2s_config->mutable_asr_config();
+  streaming_config->set_interim_results(false);
   auto config = streaming_config->mutable_config();
   config->set_sample_rate_hertz(samplerate);
-  config->set_language_code(language_code_);
+  config->set_language_code(source_language_code_);
   config->set_encoding(encoding);
-  config->set_max_alternatives(max_alternatives_);
+  config->set_max_alternatives(1);
   config->set_profanity_filter(profanity_filter_);
   config->set_audio_channel_count(channels);
-  config->set_enable_word_time_offsets(word_time_offsets_);
+  config->set_enable_word_time_offsets(false);
   config->set_enable_automatic_punctuation(automatic_punctuation_);
   config->set_enable_separate_recognition_per_channel(separate_recognition_per_channel_);
   config->set_verbatim_transcripts(verbatim_transcripts_);
-  if (model_name_ != "") {
-    config->set_model(model_name_);
-  }
-
   call->streamer->Write(request);
 
   std::thread microphone_thread(
@@ -458,7 +423,7 @@ StreamingRecognizeClient::DoStreamingFromMicrophone(
 }
 
 void
-StreamingRecognizeClient::PrintLatencies(std::vector<double>& latencies, const std::string& name)
+StreamingS2SClient::PrintLatencies(std::vector<double>& latencies, const std::string& name)
 {
   if (latencies.size() > 0) {
     std::sort(latencies.begin(), latencies.end());
@@ -484,20 +449,15 @@ StreamingRecognizeClient::PrintLatencies(std::vector<double>& latencies, const s
 }
 
 int
-StreamingRecognizeClient::PrintStats()
+StreamingS2SClient::PrintStats()
 {
-  if (print_latency_stats_ && simulate_realtime_) {
+  if (simulate_realtime_) {
     PrintLatencies(latencies_, "Latencies");
-    PrintLatencies(int_latencies_, "Intermediate latencies");
-    PrintLatencies(final_latencies_, "Final latencies");
     return 0;
   } else {
-    std::cout
-        << "Not printing latency statistics because the client is run without the "
-           "--simulate_realtime option and/or the number of requests sent is not equal to "
-           "number of requests received. To get latency statistics, run with --simulate_realtime "
-           "and set the --chunk_duration_ms to be the same as the server chunk duration"
-        << std::endl;
+    std::cout << "To get latency statistics, run with --simulate_realtime "
+                 "and set the --chunk_duration_ms to be the same as the server chunk duration"
+              << std::endl;
     return 1;
   }
 }

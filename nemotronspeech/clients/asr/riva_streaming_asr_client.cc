@@ -25,11 +25,11 @@
 #include <thread>
 
 #include "client_call.h"
-#include "riva/clients/utils/grpc.h"
+#include "nemotronspeech/clients/utils/grpc.h"
 #include "riva/proto/riva_asr.grpc.pb.h"
-#include "riva/utils/files/files.h"
-#include "riva/utils/stamping.h"
-#include "riva/utils/wav/wav_reader.h"
+#include "nemotronspeech/utils/files/files.h"
+#include "nemotronspeech/utils/stamping.h"
+#include "nemotronspeech/utils/wav/wav_reader.h"
 #include "riva_asr_client_helper.h"
 #include "streaming_recognize_client.h"
 

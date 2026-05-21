@@ -12,15 +12,15 @@ cc_binary(
     srcs = ["riva_tts_client.cc"],
     deps = [
         "@nvriva_common//riva/proto:riva_grpc_tts",
-        "//riva/utils:stamping",
-        "//riva/utils/wav:writer",
-        "//riva/utils/wav:reader",
-        "//riva/utils/opus",
+        "//nemotronspeech/utils:stamping",
+        "//nemotronspeech/utils/wav:writer",
+        "//nemotronspeech/utils/wav:reader",
+        "//nemotronspeech/utils/opus",
         "@glog//:glog",
         "@com_google_absl//absl/time",
         "@com_github_gflags_gflags//:gflags",
         "@com_github_grpc_grpc//:grpc++",
-        "//riva/clients/utils:grpc",
+        "//nemotronspeech/clients/utils:grpc",
     ]
 )
 
@@ -29,13 +29,13 @@ cc_binary(
     srcs = ["riva_tts_perf_client.cc"],
     deps = [
         "@nvriva_common//riva/proto:riva_grpc_tts",
-        "//riva/utils:stamping",
-        "//riva/utils/wav:writer",
-        "//riva/utils/wav:reader",
-        "//riva/utils/opus",
+        "//nemotronspeech/utils:stamping",
+        "//nemotronspeech/utils/wav:writer",
+        "//nemotronspeech/utils/wav:reader",
+        "//nemotronspeech/utils/opus",
         "@glog//:glog",
         "@com_github_gflags_gflags//:gflags",
         "@com_github_grpc_grpc//:grpc++",
-        "//riva/clients/utils:grpc",
+        "//nemotronspeech/clients/utils:grpc",
     ]
 )

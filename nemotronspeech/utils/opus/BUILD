@@ -23,7 +23,7 @@ cc_library(
         "@glog//:glog",
         "@libopus",
         "@libopusfile",
-        "//riva/utils/wav:reader",
+        "//nemotronspeech/utils/wav:reader",
     ],
     linkopts = [
         "-logg"

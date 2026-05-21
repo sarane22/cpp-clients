@@ -12,8 +12,8 @@ cc_library(
     hdrs = ["grpc.h"],
     linkopts = ["-lm"],
     deps = [
-        "//riva/utils/files:files",
-        "//riva/utils:string_processing",
+        "//nemotronspeech/utils/files:files",
+        "//nemotronspeech/utils:string_processing",
         "@com_github_gflags_gflags//:gflags",
         "@glog//:glog",
         "@com_github_grpc_grpc//:grpc++"

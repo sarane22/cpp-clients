@@ -23,9 +23,9 @@ cc_binary(
     srcs = ["riva_nlp_punct.cc","riva_nlp_client.h"],
     deps = [
         ":riva_nlp_client",
-        "//riva/clients/utils:grpc",
-        "//riva/utils:stamping",
-        "//riva/utils/files:files"
+        "//nemotronspeech/clients/utils:grpc",
+        "//nemotronspeech/utils:stamping",
+        "//nemotronspeech/utils/files:files"
     ]
 )
 

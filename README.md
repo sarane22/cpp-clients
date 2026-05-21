@@ -1,7 +1,7 @@
 [![CircleCI](https://circleci.com/gh/nvidia-riva/cpp-clients.svg?style=shield)](https://circleci.com/gh/nvidia-riva/cpp-clients) [![License](https://img.shields.io/badge/license-MIT-green)](https://opensource.org/licenses/MIT)
-# NVIDIA Riva Clients
+# NVIDIA NemotronSpeech Clients
 
-NVIDIA Riva is a GPU-accelerated SDK for building Speech AI applications that are customized for your use case and deliver real-time performance. This repo provides performant client example command-line clients.
+NVIDIA NemotronSpeech is a GPU-accelerated SDK for building Speech AI applications that are customized for your use case and deliver real-time performance. This repo provides performant client example command-line clients.
 
 ## Features
 
@@ -17,7 +17,7 @@ NVIDIA Riva is a GPU-accelerated SDK for building Speech AI applications that ar
 ## Requirements
 
 1. Meet the Quick Start [prerequisites](https://docs.nvidia.com/deeplearning/riva/user-guide/docs/quick-start-guide.html#prerequisites)
-2. A NVIDIA Riva Server (Set one up using the [quick start guide](https://docs.nvidia.com/deeplearning/riva/user-guide/docs/quick-start-guide.html#local-deployment-using-quick-start-scripts))
+2. A NVIDIA NemotronSpeech Server (Set one up using the [quick start guide](https://docs.nvidia.com/deeplearning/riva/user-guide/docs/quick-start-guide.html#local-deployment-using-quick-start-scripts))
 3. Docker (for Docker build)
 4. Bazel 5.0.0 (for local build)
 
@@ -25,18 +25,18 @@ NVIDIA Riva is a GPU-accelerated SDK for building Speech AI applications that ar
 
 ### Docker
 
-To avoid needing to manually build the clients yourself, Riva comes with a ready to use client docker image. This allows you to run the clients through an interactive docker container.
+To avoid needing to manually build the clients yourself, NemotronSpeech comes with a ready to use client docker image. This allows you to run the clients through an interactive docker container.
 
-The clients will need access to a Riva Server. If your server is running locally all you need to do is allow the client container access to your local network. 
+The clients will need access to a NemotronSpeech Server. If your server is running locally all you need to do is allow the client container access to your local network. 
 If your server is not running locally, all clients come with a command line option `--riva_uri`. This defaults to `localhost:50051`, which is also the default server configuration. As the server is not local, run the client using `--riva_uri [IP]:[PORT]` with your configuration. 
 
 To build the docker image simply run
 ```
-DOCKER_BUILDKIT=1 docker build . --tag riva-client
+DOCKER_BUILDKIT=1 docker build . --tag nemotronspeech-client
 ```
 To start an interactive docker container, with access to your local network, you can then run
 ```
-docker run -it --net=host riva-client
+docker run -it --net=host nemotronspeech-client
 ```
 
 Then you can run the clients as command line programs
@@ -57,20 +57,20 @@ bazel build ...
 
 To build a specific client, you can run:
 ```
-bazel build //riva/clients/[asr/tts/nlp]:[CLIENT_NAME]
+bazel build //nemotronspeech/clients/[asr/tts/nlp]:[CLIENT_NAME]
 ```
 
 For example, to build the `riva_streaming_asr_client` you would run:
 ```
-bazel build //riva/clients/asr:riva_streaming_asr_client
+bazel build //nemotronspeech/clients/asr:riva_streaming_asr_client
 ```
 
-You can find the built binaries in `bazel-bin/riva/clients`
+You can find the built binaries in `bazel-bin/nemotronspeech/clients`
 
 ## Usage
 
 ### Speech Recognition (ASR) Clients
-Riva comes with 2 ASR clients:
+NemotronSpeech comes with 2 ASR clients:
 1. `riva_asr_client` for offline usage. Using this client, the server will wait until it receives the full audio file before transcribing it and sending it back to the client.
 2. `riva_streaming_asr_client` for online usage. Using this client, the server will start transcribing after it receives a sufficient amount of audio data, "streaming" intermediate transcripts as it goes on back to the client. By default, it is set to transcribe after every `100ms`, this can be changed using the `--chunk_duration_ms` command line flag.
 
@@ -88,7 +88,7 @@ Note that only single-channel audio files in the `.wav` format are currently sup
 Other options and information can be found by running the clients with `-help`
 
 ### Speech Synthesis (TTS) Client
-Riva comes with 2 TTS clients:
+NemotronSpeech comes with 2 TTS clients:
 1. `riva_tts_client` 
 2. `riva_tts_perf_client`
 
@@ -110,7 +110,7 @@ Other options and information can be found by running the clients with `-help`
 
 ### NLP Client
 
-Riva comes with `riva_nlp_punct` NLP client for Punctuation. The `examples` folder contains example queries to test out the API.
+NemotronSpeech comes with `riva_nlp_punct` NLP client for Punctuation. The `examples` folder contains example queries to test out the API.
 
 To run the Punctuation client, simply pass in a text file containing queries using the `--queries` flag
 
@@ -126,7 +126,7 @@ Other options and information can be found by running the client with `-help`
 
 ## Documentation
 
-Additional documentation on the Riva Speech Skills SDK can be found [here](https://docs.nvidia.com/deeplearning/riva/user-guide/docs/).
+Additional documentation on the NemotronSpeech Skills SDK can be found [here](https://docs.nvidia.com/deeplearning/riva/user-guide/docs/).
 
 
 ## License

@@ -23,10 +23,10 @@
 #include <string>
 #include <thread>
 
-#include "riva/clients/asr/riva_asr_client_helper.h"
+#include "nemotronspeech/clients/asr/riva_asr_client_helper.h"
 #include "riva/proto/riva_asr.grpc.pb.h"
 #include "riva/proto/riva_nmt.grpc.pb.h"
-#include "riva/utils/wav/wav_reader.h"
+#include "nemotronspeech/utils/wav/wav_reader.h"
 
 using grpc::Status;
 using grpc::StatusCode;

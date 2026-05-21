@@ -10,7 +10,7 @@ cc_binary(
     name = "riva_nmt_t2t_client",
     srcs = ["riva_nmt_t2t_client.cc"],
     deps = [
-        "//riva/clients/utils:grpc",
+        "//nemotronspeech/clients/utils:grpc",
         "@nvriva_common//riva/proto:riva_grpc_nmt",
         "@com_github_gflags_gflags//:gflags",
         "@glog//:glog",
@@ -30,10 +30,10 @@ cc_library(
             "@alsa//:libasound"
         ],
     }) + [
-        "//riva/clients/asr:asr_client_helper",
+        "//nemotronspeech/clients/asr:asr_client_helper",
         "@com_github_grpc_grpc//:grpc++",
         "@nvriva_common//riva/proto:riva_grpc_nmt",
-        "//riva/utils/wav:reader",
+        "//nemotronspeech/utils/wav:reader",
     ],
 )
 
@@ -43,11 +43,11 @@ cc_library(
             "streaming_s2s_client.cc"
     ],
     deps = [
-        "//riva/clients/asr:asr_client_helper",
+        "//nemotronspeech/clients/asr:asr_client_helper",
         ":client_call",
-        "//riva/utils/wav:reader",
-        "//riva/utils/wav:writer",
-        "//riva/utils/opus",
+        "//nemotronspeech/utils/wav:reader",
+        "//nemotronspeech/utils/wav:writer",
+        "//nemotronspeech/utils/opus",
         "@glog//:glog",
     ] + select({
         "@platforms//cpu:aarch64": [
@@ -57,11 +57,11 @@ cc_library(
             "@alsa//:libasound"
         ],
     }) + [
-        "//riva/utils:stamping",
+        "//nemotronspeech/utils:stamping",
         "@com_github_grpc_grpc//:grpc++",
         "@com_github_gflags_gflags//:gflags",
         "@nvriva_common//riva/proto:riva_grpc_nmt",
-        "//riva/utils:thread_pool",
+        "//nemotronspeech/utils:thread_pool",
     ],
 )
 cc_library(
@@ -70,9 +70,9 @@ cc_library(
             "streaming_s2t_client.cc"
     ],
     deps = [
-        "//riva/clients/asr:asr_client_helper",
+        "//nemotronspeech/clients/asr:asr_client_helper",
         ":client_call",
-        "//riva/utils/wav:reader",
+        "//nemotronspeech/utils/wav:reader",
         "@glog//:glog",
     ] + select({
         "@platforms//cpu:aarch64": [
@@ -82,11 +82,11 @@ cc_library(
             "@alsa//:libasound"
         ],
     }) + [
-        "//riva/utils:stamping",
+        "//nemotronspeech/utils:stamping",
         "@com_github_grpc_grpc//:grpc++",
         "@com_github_gflags_gflags//:gflags",
         "@nvriva_common//riva/proto:riva_grpc_nmt",
-        "//riva/utils:thread_pool",
+        "//nemotronspeech/utils:thread_pool",
     ],
 )
 
@@ -94,14 +94,14 @@ cc_binary(
     name = "riva_nmt_streaming_s2t_client",
     srcs = ["riva_nmt_streaming_s2t_client.cc"],
     deps = [
-        "//riva/clients/asr:asr_client_helper",
+        "//nemotronspeech/clients/asr:asr_client_helper",
         ":client_call",
         ":streaming_s2t_client",
         "@nvriva_common//riva/proto:riva_grpc_nmt",
-        "//riva/utils/files:files",
-        "//riva/utils/wav:reader",
+        "//nemotronspeech/utils/files:files",
+        "//nemotronspeech/utils/wav:reader",
         "@glog//:glog",
-        "//riva/clients/utils:grpc",
+        "//nemotronspeech/clients/utils:grpc",
     ] + select({
         "@platforms//cpu:aarch64": [
             "@alsa_aarch64//:libasound"
@@ -118,13 +118,13 @@ cc_binary(
     name = "riva_nmt_streaming_s2s_client",
     srcs = ["riva_nmt_streaming_s2s_client.cc"],
     deps = [
-        "//riva/clients/asr:asr_client_helper",
+        "//nemotronspeech/clients/asr:asr_client_helper",
         ":client_call",
         ":streaming_s2s_client",
         "@nvriva_common//riva/proto:riva_grpc_nmt",
-        "//riva/utils/files:files",
+        "//nemotronspeech/utils/files:files",
         "@glog//:glog",
-        "//riva/clients/utils:grpc",
+        "//nemotronspeech/clients/utils:grpc",
     ] + select({
         "@platforms//cpu:aarch64": [
             "@alsa_aarch64//:libasound"

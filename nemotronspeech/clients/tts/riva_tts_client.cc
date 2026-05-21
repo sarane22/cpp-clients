@@ -17,13 +17,13 @@
 #include <regex>
 #include <string>
 
-#include "riva/clients/utils/grpc.h"
+#include "nemotronspeech/clients/utils/grpc.h"
 #include "riva/proto/riva_tts.grpc.pb.h"
-#include "riva/utils/files/files.h"
-#include "riva/utils/opus/opus_client_decoder.h"
-#include "riva/utils/stamping.h"
-#include "riva/utils/wav/wav_reader.h"
-#include "riva/utils/wav/wav_writer.h"
+#include "nemotronspeech/utils/files/files.h"
+#include "nemotronspeech/utils/opus/opus_client_decoder.h"
+#include "nemotronspeech/utils/stamping.h"
+#include "nemotronspeech/utils/wav/wav_reader.h"
+#include "nemotronspeech/utils/wav/wav_writer.h"
 
 using grpc::Status;
 using grpc::StatusCode;
