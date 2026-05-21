@@ -8,8 +8,8 @@ package(
 )
 
 cc_binary(
-    name = "riva_tts_client",
-    srcs = ["riva_tts_client.cc"],
+    name = "nemotron_tts_client",
+    srcs = ["nemotron_tts_client.cc"],
     deps = [
         "@nvriva_common//riva/proto:riva_grpc_tts",
         "//nemotronspeech/utils:stamping",
@@ -25,8 +25,8 @@ cc_binary(
 )
 
 cc_binary(
-    name = "riva_tts_perf_client",
-    srcs = ["riva_tts_perf_client.cc"],
+    name = "nemotron_tts_perf_client",
+    srcs = ["nemotron_tts_perf_client.cc"],
     deps = [
         "@nvriva_common//riva/proto:riva_grpc_tts",
         "//nemotronspeech/utils:stamping",

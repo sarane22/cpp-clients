@@ -8,8 +8,8 @@ package(
 )
 
 cc_library(
-    name = "riva_nlp_client",
-    hdrs = ["riva_nlp_client.h"],
+    name = "nemotron_nlp_client",
+    hdrs = ["nemotron_nlp_client.h"],
     deps = [
         "@nvriva_common//riva/proto:riva_grpc_nlp",
         "@com_github_gflags_gflags//:gflags",
@@ -19,10 +19,10 @@ cc_library(
 )
 
 cc_binary(
-    name = "riva_nlp_punct",
-    srcs = ["riva_nlp_punct.cc","riva_nlp_client.h"],
+    name = "nemotron_nlp_punct",
+    srcs = ["nemotron_nlp_punct.cc","nemotron_nlp_client.h"],
     deps = [
-        ":riva_nlp_client",
+        ":nemotron_nlp_client",
         "//nemotronspeech/clients/utils:grpc",
         "//nemotronspeech/utils:stamping",
         "//nemotronspeech/utils/files:files"

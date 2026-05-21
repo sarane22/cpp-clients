@@ -13,7 +13,7 @@ package(
 
 cc_library(
     name = "asr_client_helper",
-    srcs = ["riva_asr_client_helper.h", "riva_asr_client_helper.cc"],
+    srcs = ["nemotron_asr_client_helper.h", "nemotron_asr_client_helper.cc"],
     deps = select({
         "@platforms//cpu:aarch64": [
             "@alsa_aarch64//:libasound"
@@ -74,8 +74,8 @@ cc_library(
 )
 
 cc_binary(
-    name = "riva_asr_client",
-    srcs = ["riva_asr_client.cc"],
+    name = "nemotron_asr_client",
+    srcs = ["nemotron_asr_client.cc"],
     deps = [
         ":asr_client_helper",
         ":client_call",
@@ -91,8 +91,8 @@ cc_binary(
 )
 
 cc_binary(
-    name = "riva_streaming_asr_client",
-    srcs = ["riva_streaming_asr_client.cc"],
+    name = "nemotron_streaming_asr_client",
+    srcs = ["nemotron_streaming_asr_client.cc"],
     deps = [
         ":asr_client_helper",
         ":client_call",

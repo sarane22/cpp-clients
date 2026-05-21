@@ -27,7 +27,7 @@
 #include "nemotronspeech/utils/files/files.h"
 #include "nemotronspeech/utils/stamping.h"
 #include "nemotronspeech/utils/wav/wav_reader.h"
-#include "riva_asr_client_helper.h"
+#include "nemotron_asr_client_helper.h"
 
 using grpc::Status;
 using grpc::StatusCode;
@@ -448,7 +448,7 @@ main(int argc, char** argv)
   FLAGS_logtostderr = 1;
 
   std::stringstream str_usage;
-  str_usage << "Usage: riva_asr_client " << std::endl;
+  str_usage << "Usage: nemotron_asr_client " << std::endl;
   str_usage << "           --audio_file=<filename or folder> " << std::endl;
   str_usage << "           --automatic_punctuation=<true|false>" << std::endl;
   str_usage << "           --max_alternatives=<integer>" << std::endl;

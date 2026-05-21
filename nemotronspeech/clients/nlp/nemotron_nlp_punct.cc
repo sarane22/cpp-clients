@@ -24,7 +24,7 @@
 #include "nemotronspeech/clients/utils/grpc.h"
 #include "nemotronspeech/utils/files/files.h"
 #include "nemotronspeech/utils/stamping.h"
-#include "riva_nlp_client.h"
+#include "nemotron_nlp_client.h"
 
 using grpc::Status;
 using grpc::StatusCode;
@@ -102,7 +102,7 @@ main(int argc, char** argv)
   FLAGS_logtostderr = 1;
 
   std::stringstream str_usage;
-  str_usage << "Usage: riva_nlp_punct" << std::endl;
+  str_usage << "Usage: nemotron_nlp_punct" << std::endl;
   str_usage << "           --queries=<filename> " << std::endl;
   str_usage << "           --riva_uri=<server_name:port> " << std::endl;
   str_usage << "           --num_iterations=<integer> " << std::endl;

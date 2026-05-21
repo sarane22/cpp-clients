@@ -4,7 +4,7 @@
  */
 
 
-#include "riva_asr_client_helper.h"
+#include "nemotron_asr_client_helper.h"
 
 #include <regex>
 

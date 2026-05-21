@@ -132,7 +132,7 @@ main(int argc, char** argv)
   FLAGS_logtostderr = 1;
 
   std::stringstream str_usage;
-  str_usage << "Usage: riva_tts_client " << std::endl;
+  str_usage << "Usage: nemotron_tts_client " << std::endl;
   str_usage << "           --text=<text> " << std::endl;
   str_usage << "           --text_file=<filename> " << std::endl;
   str_usage << "           --audio_file=<filename> " << std::endl;
