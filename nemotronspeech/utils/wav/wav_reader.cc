@@ -15,7 +15,7 @@
 #include <sstream>
 
 #include "rapidjson/document.h"
-#include "riva/proto/riva_asr.pb.h"
+#include "nemotronspeech/proto/nemotron_asr.pb.h"
 
 namespace nr = nvidia::riva;
 namespace nr_asr = nvidia::riva::asr;

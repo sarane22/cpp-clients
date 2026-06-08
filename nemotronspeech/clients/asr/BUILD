@@ -23,7 +23,7 @@ cc_library(
         ],
     }) + [
         "@com_github_grpc_grpc//:grpc++",
-        "@nvriva_common//riva/proto:riva_grpc_asr",
+        "@nvriva_common//nemotronspeech/proto:nemotron_grpc_asr",
     ],
 )
 
@@ -40,7 +40,7 @@ cc_library(
     }) + [
         ":asr_client_helper",
         "@com_github_grpc_grpc//:grpc++",
-        "@nvriva_common//riva/proto:riva_grpc_asr",
+        "@nvriva_common//nemotronspeech/proto:nemotron_grpc_asr",
         "@glog//:glog",
         "//nemotronspeech/utils/wav:reader",
     ],
@@ -68,7 +68,7 @@ cc_library(
         "//nemotronspeech/utils:stamping",
         "@com_github_grpc_grpc//:grpc++",
         "@com_github_gflags_gflags//:gflags",
-        "@nvriva_common//riva/proto:riva_grpc_asr",
+        "@nvriva_common//nemotronspeech/proto:nemotron_grpc_asr",
         "//nemotronspeech/utils:thread_pool",
     ],
 )
@@ -79,7 +79,7 @@ cc_binary(
     deps = [
         ":asr_client_helper",
         ":client_call",
-        "@nvriva_common//riva/proto:riva_grpc_asr",
+        "@nvriva_common//nemotronspeech/proto:nemotron_grpc_asr",
         "//nemotronspeech/utils:stamping",
         "//nemotronspeech/utils/files:files",
         "//nemotronspeech/utils/wav:reader",
@@ -97,7 +97,7 @@ cc_binary(
         ":asr_client_helper",
         ":client_call",
         ":streaming_recognize_client",
-        "@nvriva_common//riva/proto:riva_grpc_asr",
+        "@nvriva_common//nemotronspeech/proto:nemotron_grpc_asr",
         "//nemotronspeech/utils/files:files",
         "//nemotronspeech/utils/wav:reader",
         "@glog//:glog",
@@ -122,7 +122,7 @@ cc_test(
     deps = [
         ":streaming_recognize_client",
         "@googletest//:gtest_main",
-        "@nvriva_common//riva/proto:riva_grpc_asr",
+        "@nvriva_common//nemotronspeech/proto:nemotron_grpc_asr",
     ],
     tags = ["needs_alsa"]
 )

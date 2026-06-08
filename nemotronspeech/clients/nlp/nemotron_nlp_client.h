@@ -23,7 +23,7 @@
 #include <string>
 #include <thread>
 
-#include "riva/proto/riva_nlp.grpc.pb.h"
+#include "nemotronspeech/proto/nemotron_nlp.grpc.pb.h"
 
 using grpc::Status;
 using grpc::StatusCode;

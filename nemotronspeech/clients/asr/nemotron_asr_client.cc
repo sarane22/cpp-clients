@@ -23,7 +23,7 @@
 #include <thread>
 
 #include "nemotronspeech/clients/utils/grpc.h"
-#include "riva/proto/riva_asr.grpc.pb.h"
+#include "nemotronspeech/proto/nemotron_asr.grpc.pb.h"
 #include "nemotronspeech/utils/files/files.h"
 #include "nemotronspeech/utils/stamping.h"
 #include "nemotronspeech/utils/wav/wav_reader.h"

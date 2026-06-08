@@ -27,7 +27,7 @@
 #include <thread>
 
 #include "client_call.h"
-#include "riva/proto/riva_asr.grpc.pb.h"
+#include "nemotronspeech/proto/nemotron_asr.grpc.pb.h"
 #include "nemotronspeech/utils/thread_pool.h"
 #include "nemotronspeech/utils/wav/wav_reader.h"
 #include "nemotron_asr_client_helper.h"

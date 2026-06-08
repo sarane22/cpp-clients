@@ -11,7 +11,7 @@ cc_binary(
     srcs = ["nemotron_nmt_t2t_client.cc"],
     deps = [
         "//nemotronspeech/clients/utils:grpc",
-        "@nvriva_common//riva/proto:riva_grpc_nmt",
+        "@nvriva_common//nemotronspeech/proto:nemotron_grpc_nmt",
         "@com_github_gflags_gflags//:gflags",
         "@glog//:glog",
         "@com_github_grpc_grpc//:grpc++"
@@ -32,7 +32,7 @@ cc_library(
     }) + [
         "//nemotronspeech/clients/asr:asr_client_helper",
         "@com_github_grpc_grpc//:grpc++",
-        "@nvriva_common//riva/proto:riva_grpc_nmt",
+        "@nvriva_common//nemotronspeech/proto:nemotron_grpc_nmt",
         "//nemotronspeech/utils/wav:reader",
     ],
 )
@@ -60,7 +60,7 @@ cc_library(
         "//nemotronspeech/utils:stamping",
         "@com_github_grpc_grpc//:grpc++",
         "@com_github_gflags_gflags//:gflags",
-        "@nvriva_common//riva/proto:riva_grpc_nmt",
+        "@nvriva_common//nemotronspeech/proto:nemotron_grpc_nmt",
         "//nemotronspeech/utils:thread_pool",
     ],
 )
@@ -85,7 +85,7 @@ cc_library(
         "//nemotronspeech/utils:stamping",
         "@com_github_grpc_grpc//:grpc++",
         "@com_github_gflags_gflags//:gflags",
-        "@nvriva_common//riva/proto:riva_grpc_nmt",
+        "@nvriva_common//nemotronspeech/proto:nemotron_grpc_nmt",
         "//nemotronspeech/utils:thread_pool",
     ],
 )
@@ -97,7 +97,7 @@ cc_binary(
         "//nemotronspeech/clients/asr:asr_client_helper",
         ":client_call",
         ":streaming_s2t_client",
-        "@nvriva_common//riva/proto:riva_grpc_nmt",
+        "@nvriva_common//nemotronspeech/proto:nemotron_grpc_nmt",
         "//nemotronspeech/utils/files:files",
         "//nemotronspeech/utils/wav:reader",
         "@glog//:glog",
@@ -121,7 +121,7 @@ cc_binary(
         "//nemotronspeech/clients/asr:asr_client_helper",
         ":client_call",
         ":streaming_s2s_client",
-        "@nvriva_common//riva/proto:riva_grpc_nmt",
+        "@nvriva_common//nemotronspeech/proto:nemotron_grpc_nmt",
         "//nemotronspeech/utils/files:files",
         "@glog//:glog",
         "//nemotronspeech/clients/utils:grpc",

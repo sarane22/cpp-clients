@@ -11,7 +11,7 @@ cc_binary(
     name = "nemotron_tts_client",
     srcs = ["nemotron_tts_client.cc"],
     deps = [
-        "@nvriva_common//riva/proto:riva_grpc_tts",
+        "@nvriva_common//nemotronspeech/proto:nemotron_grpc_tts",
         "//nemotronspeech/utils:stamping",
         "//nemotronspeech/utils/wav:writer",
         "//nemotronspeech/utils/wav:reader",
@@ -28,7 +28,7 @@ cc_binary(
     name = "nemotron_tts_perf_client",
     srcs = ["nemotron_tts_perf_client.cc"],
     deps = [
-        "@nvriva_common//riva/proto:riva_grpc_tts",
+        "@nvriva_common//nemotronspeech/proto:nemotron_grpc_tts",
         "//nemotronspeech/utils:stamping",
         "//nemotronspeech/utils/wav:writer",
         "//nemotronspeech/utils/wav:reader",

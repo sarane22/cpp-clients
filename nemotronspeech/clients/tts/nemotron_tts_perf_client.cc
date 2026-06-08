@@ -21,7 +21,7 @@
 #include <utility>
 
 #include "nemotronspeech/clients/utils/grpc.h"
-#include "riva/proto/riva_tts.grpc.pb.h"
+#include "nemotronspeech/proto/nemotron_tts.grpc.pb.h"
 #include "nemotronspeech/utils/files/files.h"
 #include "nemotronspeech/utils/opus/opus_client_decoder.h"
 #include "nemotronspeech/utils/stamping.h"

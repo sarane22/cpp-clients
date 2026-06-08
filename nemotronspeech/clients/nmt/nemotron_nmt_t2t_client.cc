@@ -17,7 +17,7 @@
 #include <thread>
 
 #include "nemotronspeech/clients/utils/grpc.h"
-#include "riva/proto/riva_nmt.grpc.pb.h"
+#include "nemotronspeech/proto/nemotron_nmt.grpc.pb.h"
 #include "nemotronspeech/utils/files/files.h"
 using grpc::Status;
 using grpc::StatusCode;

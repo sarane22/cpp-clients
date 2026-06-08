@@ -15,7 +15,7 @@
 
 #include "absl/strings/str_replace.h"
 #include "absl/strings/str_split.h"
-#include "riva/proto/riva_asr.grpc.pb.h"
+#include "nemotronspeech/proto/nemotron_asr.grpc.pb.h"
 
 namespace nr = nvidia::riva;
 namespace nr_asr = nvidia::riva::asr;
