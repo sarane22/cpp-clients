@@ -31,7 +31,7 @@ using grpc::StatusCode;
 namespace nr = nvidia::riva;
 namespace nr_nlp = nvidia::riva::nlp;
 
-DEFINE_string(riva_uri, "localhost:50051", "URI to access riva-server");
+DEFINE_string(server, "localhost:50051", "URI to access riva-server");
 DEFINE_string(model_name, "", "Model name to test");
 DEFINE_string(language_code, "en-US", "Punctuation model language code");
 DEFINE_string(queries, "", "Path to a file with one input sentence per line");
@@ -104,7 +104,7 @@ main(int argc, char** argv)
   std::stringstream str_usage;
   str_usage << "Usage: nemotron_nlp_punct" << std::endl;
   str_usage << "           --queries=<filename> " << std::endl;
-  str_usage << "           --riva_uri=<server_name:port> " << std::endl;
+  str_usage << "           --server=<server_name:port> " << std::endl;
   str_usage << "           --num_iterations=<integer> " << std::endl;
   str_usage << "           --parallel_requests=<integer> " << std::endl;
   str_usage << "           --print_results=<true|false> " << std::endl;
@@ -127,12 +127,12 @@ main(int argc, char** argv)
     std::cout << gflags::ProgramUsage();
     return 1;
   }
-  bool flag_set = gflags::GetCommandLineFlagInfoOrDie("riva_uri").is_default;
-  const char* riva_uri = getenv("RIVA_URI");
+  bool flag_set = gflags::GetCommandLineFlagInfoOrDie("server").is_default;
+  const char* server_uri = getenv("RIVA_URI");
 
-  if (riva_uri && flag_set) {
-    std::cout << "Using environment for " << riva_uri << std::endl;
-    FLAGS_riva_uri = riva_uri;
+  if (server_uri && flag_set) {
+    std::cout << "Using environment for " << server_uri << std::endl;
+    FLAGS_server = server_uri;
   }
 
   std::ofstream outfile;
@@ -150,7 +150,7 @@ main(int argc, char** argv)
   try {
     auto creds =
         riva::clients::CreateChannelCredentials(FLAGS_use_ssl, FLAGS_ssl_root_cert, FLAGS_ssl_client_key, FLAGS_ssl_client_cert, FLAGS_metadata);
-    grpc_channel = riva::clients::CreateChannelBlocking(FLAGS_riva_uri, creds);
+    grpc_channel = riva::clients::CreateChannelBlocking(FLAGS_server, creds);
   }
   catch (const std::exception& e) {
     std::cerr << "Error creating GRPC channel: " << e.what() << std::endl;

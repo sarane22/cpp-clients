@@ -36,7 +36,7 @@ namespace nr_tts = nvidia::riva::tts;
 DEFINE_string(
     text_file, "", "Text file with list of sentences to be synthesized. Ignored if 'text' is set.");
 DEFINE_string(audio_encoding, "pcm", "Audio encoding (pcm or opus)");
-DEFINE_string(riva_uri, "localhost:50051", "Riva API server URI and port");
+DEFINE_string(server, "localhost:50051", "Riva API server URI and port");
 DEFINE_int32(rate, 44100, "Sample rate for the TTS output");
 DEFINE_bool(online, false, "Whether synthesis should be online or batch");
 DEFINE_bool(
@@ -392,7 +392,7 @@ main(int argc, char** argv)
   str_usage << "Usage: nemotron_tts_perf_client " << std::endl;
   str_usage << "           --text_file=<text_file> " << std::endl;
   str_usage << "           --write_output_audio=<true|false> " << std::endl;
-  str_usage << "           --riva_uri=<server_name:port> " << std::endl;
+  str_usage << "           --server=<server_name:port> " << std::endl;
   str_usage << "           --rate=<sample_rate> " << std::endl;
   str_usage << "           --language=<language-code> " << std::endl;
   str_usage << "           --voice_name=<voice-name> " << std::endl;
@@ -427,12 +427,12 @@ main(int argc, char** argv)
     return 1;
   }
 
-  bool flag_set = gflags::GetCommandLineFlagInfoOrDie("riva_uri").is_default;
-  const char* riva_uri = getenv("RIVA_URI");
+  bool flag_set = gflags::GetCommandLineFlagInfoOrDie("server").is_default;
+  const char* server_uri = getenv("RIVA_URI");
 
-  if (riva_uri && flag_set) {
-    std::cout << "Using environment for " << riva_uri << std::endl;
-    FLAGS_riva_uri = riva_uri;
+  if (server_uri && flag_set) {
+    std::cout << "Using environment for " << server_uri << std::endl;
+    FLAGS_server = server_uri;
   }
 
   std::string sentence;
@@ -478,7 +478,7 @@ main(int argc, char** argv)
     auto creds = riva::clients::CreateChannelCredentials(
         FLAGS_use_ssl, FLAGS_ssl_root_cert, FLAGS_ssl_client_key, FLAGS_ssl_client_cert,
         FLAGS_metadata);
-    grpc_channel = riva::clients::CreateChannelBlocking(FLAGS_riva_uri, creds);
+    grpc_channel = riva::clients::CreateChannelBlocking(FLAGS_server, creds);
   }
   catch (const std::exception& e) {
     std::cerr << "Error creating GRPC channel: " << e.what() << std::endl;

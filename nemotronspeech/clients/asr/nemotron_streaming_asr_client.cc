@@ -53,7 +53,7 @@ DEFINE_bool(word_time_offsets, true, "Flag that controls if word time stamps are
 DEFINE_bool(
     simulate_realtime, false, "Flag that controls if audio files should be sent in realtime");
 DEFINE_string(audio_device, "", "Name of audio device to use");
-DEFINE_string(riva_uri, "localhost:50051", "URI to access riva-server");
+DEFINE_string(server, "localhost:50051", "URI to access riva-server");
 DEFINE_int32(num_iterations, 1, "Number of times to loop over audio files");
 DEFINE_int32(num_parallel_requests, 1, "Number of parallel requests to keep in flight");
 DEFINE_int32(chunk_duration_ms, 100, "Chunk duration in milliseconds");
@@ -129,7 +129,7 @@ main(int argc, char** argv)
   str_usage << "           --max_alternatives=<integer>" << std::endl;
   str_usage << "           --profanity_filter=<true|false>" << std::endl;
   str_usage << "           --word_time_offsets=<true|false>" << std::endl;
-  str_usage << "           --riva_uri=<server_name:port> " << std::endl;
+  str_usage << "           --server=<server_name:port> " << std::endl;
   str_usage << "           --chunk_duration_ms=<integer> " << std::endl;
   str_usage << "           --interim_results=<true|false> " << std::endl;
   str_usage << "           --simulate_realtime=<true|false> " << std::endl;
@@ -179,12 +179,12 @@ main(int argc, char** argv)
     return 1;
   }
 
-  bool flag_set = gflags::GetCommandLineFlagInfoOrDie("riva_uri").is_default;
-  const char* riva_uri = getenv("RIVA_URI");
+  bool flag_set = gflags::GetCommandLineFlagInfoOrDie("server").is_default;
+  const char* server_uri = getenv("RIVA_URI");
 
-  if (riva_uri && flag_set) {
-    std::cout << "Using environment for " << riva_uri << std::endl;
-    FLAGS_riva_uri = riva_uri;
+  if (server_uri && flag_set) {
+    std::cout << "Using environment for " << server_uri << std::endl;
+    FLAGS_server = server_uri;
   }
 
   std::shared_ptr<grpc::Channel> grpc_channel;
@@ -192,7 +192,7 @@ main(int argc, char** argv)
     auto creds = riva::clients::CreateChannelCredentials(
         FLAGS_use_ssl, FLAGS_ssl_root_cert, FLAGS_ssl_client_key, FLAGS_ssl_client_cert,
         FLAGS_metadata);
-    grpc_channel = riva::clients::CreateChannelBlocking(FLAGS_riva_uri, creds, FLAGS_timeout_ms,
+    grpc_channel = riva::clients::CreateChannelBlocking(FLAGS_server, creds, FLAGS_timeout_ms,
                                                         FLAGS_max_grpc_message_size);
   }
   catch (const std::exception& e) {

@@ -35,7 +35,7 @@ DEFINE_string(
     text_file, "", "Text file with list of sentences to be synthesized. Ignored if 'text' is set.");
 DEFINE_string(audio_file, "output.wav", "Output file");
 DEFINE_string(audio_encoding, "pcm", "Audio encoding (pcm or opus)");
-DEFINE_string(riva_uri, "localhost:50051", "Riva API server URI and port");
+DEFINE_string(server, "localhost:50051", "Riva API server URI and port");
 DEFINE_string(ssl_root_cert, "", "Path to SSL root certificates file");
 DEFINE_string(ssl_client_key, "", "Path to SSL client certificates key");
 DEFINE_string(ssl_client_cert, "", "Path to SSL client certificates file");
@@ -137,7 +137,7 @@ main(int argc, char** argv)
   str_usage << "           --text_file=<filename> " << std::endl;
   str_usage << "           --audio_file=<filename> " << std::endl;
   str_usage << "           --audio_encoding=<pcm|opus> " << std::endl;
-  str_usage << "           --riva_uri=<server_name:port> " << std::endl;
+  str_usage << "           --server=<server_name:port> " << std::endl;
   str_usage << "           --rate=<sample_rate> " << std::endl;
   str_usage << "           --language=<language-code> " << std::endl;
   str_usage << "           --voice_name=<voice-name> " << std::endl;
@@ -192,12 +192,12 @@ main(int argc, char** argv)
     text_lines.push_back(text);
   }
 
-  bool flag_set = gflags::GetCommandLineFlagInfoOrDie("riva_uri").is_default;
-  const char* riva_uri = getenv("RIVA_URI");
+  bool flag_set = gflags::GetCommandLineFlagInfoOrDie("server").is_default;
+  const char* server_uri = getenv("RIVA_URI");
 
-  if (riva_uri && flag_set) {
-    LOG(INFO) << "Using environment for " << riva_uri << std::endl;
-    FLAGS_riva_uri = riva_uri;
+  if (server_uri && flag_set) {
+    LOG(INFO) << "Using environment for " << server_uri << std::endl;
+    FLAGS_server = server_uri;
   }
 
   std::shared_ptr<grpc::Channel> grpc_channel;
@@ -205,7 +205,7 @@ main(int argc, char** argv)
     auto creds = riva::clients::CreateChannelCredentials(
         FLAGS_use_ssl, FLAGS_ssl_root_cert, FLAGS_ssl_client_key, FLAGS_ssl_client_cert,
         FLAGS_metadata);
-    grpc_channel = riva::clients::CreateChannelBlocking(FLAGS_riva_uri, creds, FLAGS_timeout_ms, FLAGS_max_grpc_message_size);
+    grpc_channel = riva::clients::CreateChannelBlocking(FLAGS_server, creds, FLAGS_timeout_ms, FLAGS_max_grpc_message_size);
   }
   catch (const std::exception& e) {
     std::cerr << "Error creating GRPC channel: " << e.what() << std::endl;
