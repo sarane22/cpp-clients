@@ -76,7 +76,7 @@ grpc_extra_deps()
 
 git_repository(
     name = "nvriva_common",
-    remote = "https://gitlab-master.nvidia.com/sarane/common.git",
+    remote = "https://github.com/sarane22/common.git",
     commit = "7ad51159e7489ccc8c8341894999ec7142160702"
 )
 
